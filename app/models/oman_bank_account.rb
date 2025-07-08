@@ -49,7 +49,7 @@ class OmanBankAccount < BankAccount
     end
 
     def validate_account_number
-      return if ACCOUNT_NUMBER_FORMAT_REGEX.match?(account_number_decrypted)
+      return if ACCOUNT_NUMBER_FORMAT_REGEX.match?(account_number_decrypted) || Ibandit::IBAN.new(account_number_decrypted).valid?
       errors.add :base, "The account number is invalid."
     end
 end
