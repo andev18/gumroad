@@ -59,8 +59,13 @@ describe OmanBankAccount do
       expect(om_bank_account).not_to be_valid
       expect(om_bank_account.errors.full_messages.to_sentence).to eq("The account number is invalid.")
 
-      # correct BBAN but incorrect check digits
+      # incorrect check digits
       om_bank_account = build(:oman_bank_account, account_number: "OM060001234567890123456")
+      expect(om_bank_account).not_to be_valid
+      expect(om_bank_account.errors.full_messages.to_sentence).to eq("The account number is invalid.")
+
+      # incorrect country code
+      om_bank_account = build(:oman_bank_account, account_number: "FR1420041010050500013M02606")
       expect(om_bank_account).not_to be_valid
       expect(om_bank_account.errors.full_messages.to_sentence).to eq("The account number is invalid.")
     end
