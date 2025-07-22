@@ -3,6 +3,7 @@ import * as React from "react";
 import { createCast, cast } from "ts-safe-cast";
 
 import { SurchargesResponse } from "$app/data/customer_surcharge";
+import { computeOfferDiscount } from "$app/data/offer_code";
 import { startOrderCreation } from "$app/data/order";
 import { LineItemResult } from "$app/data/purchase";
 import { getPlugins, trackUserActionEvent, trackUserProductAction } from "$app/data/user_action_event";
@@ -49,7 +50,12 @@ import { TemporaryLibrary } from "$app/components/Checkout/TemporaryLibrary";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { Modal } from "$app/components/Modal";
 import { AuthorByline } from "$app/components/Product/AuthorByline";
-import { computeOptionPrice, OptionRadioButton, Option } from "$app/components/Product/ConfigurationSelector";
+import {
+  computeOptionPrice,
+  OptionRadioButton,
+  Option,
+  computeDiscountedPrice,
+} from "$app/components/Product/ConfigurationSelector";
 import { PriceTag } from "$app/components/Product/PriceTag";
 import { showAlert } from "$app/components/server-components/Alert";
 import { useAddThirdPartyAnalytics } from "$app/components/useAddThirdPartyAnalytics";
@@ -136,6 +142,74 @@ const addProduct = ({
   };
   if (existing) Object.assign(existing, newItem);
   else cart.items.unshift(newItem);
+};
+
+const reApplyDiscountCodesToCart = async (
+  cart: CartState,
+  existingDiscountCodes: CartState["discountCodes"],
+): Promise<CartState["discountCodes"]> => {
+  const products = Object.fromEntries(
+    cart.items.map((item) => [item.product.permalink, { permalink: item.product.permalink, quantity: item.quantity }]),
+  );
+
+  const discountResults = await Promise.all(
+    existingDiscountCodes.map(async (discountCode) => {
+      try {
+        const discount = await computeOfferDiscount({
+          code: discountCode.code,
+          products,
+        });
+        return { discountCode, discount, error: null };
+      } catch (error) {
+        return { discountCode, discount: null, error };
+      }
+    }),
+  );
+
+  const newDiscountCodes: CartState["discountCodes"] = [];
+
+  for (const { discountCode, discount } of discountResults) {
+    if (!discount || !discount.valid || Object.keys(discount.products_data).length === 0) {
+      continue;
+    }
+
+    const entries = Object.entries(discount.products_data);
+    const pppDiscountGreaterCount = entries.reduce((acc, [permalink, discount]) => {
+      const item = cart.items.find(({ product }) => product.permalink === permalink);
+      return item && computeDiscountedPrice(item.price, discount, item.product).ppp ? acc + 1 : acc;
+    }, 0);
+
+    if (pppDiscountGreaterCount === entries.length) {
+      continue;
+    }
+
+    newDiscountCodes.unshift({
+      code: discountCode.code.toLowerCase().trim(),
+      products: discount.products_data,
+      fromUrl: discountCode.fromUrl,
+    });
+
+    for (let i = newDiscountCodes.length - 1; i > 0; i--) {
+      const existingCode = newDiscountCodes[i];
+      if (!existingCode) continue;
+
+      const filteredProducts = Object.fromEntries(
+        Object.entries(existingCode.products).filter(([permalink]) => !(permalink in discount.products_data)),
+      );
+
+      if (existingCode.code !== discountCode.code && Object.keys(filteredProducts).length > 0) {
+        newDiscountCodes[i] = {
+          code: existingCode.code,
+          products: filteredProducts,
+          fromUrl: existingCode.fromUrl,
+        };
+      } else {
+        newDiscountCodes.splice(i, 1);
+      }
+    }
+  }
+
+  return newDiscountCodes;
 };
 
 export const CheckoutPage = ({
@@ -241,34 +315,57 @@ export const CheckoutPage = ({
   // Without this, the price displayed on the Apple Pay payment sheet
   // won't reflect the accepted offer.
   const [surchargesIfAccepted, setSurchargesIfAccepted] = React.useState<SurchargesResponse | null>(null);
-  useOnChange(
-    () =>
-      void loadSurcharges({ ...state, products: getProducts(getCartIfAccepted()) })
-        .then(setSurchargesIfAccepted)
-        .catch((e: unknown) => {
-          assertResponseError(e);
-          showAlert("Sorry, something went wrong. Please try again.", "error");
-          dispatch({ type: "cancel" });
-        }),
-    [currentOffer],
-  );
+  const [discountsIfAccepted, setDiscountsIfAccepted] = React.useState<CartState["discountCodes"] | null>(null);
+
+  useOnChange(() => {
+    const cartIfAccepted = getCartIfAccepted();
+
+    void reApplyDiscountCodesToCart(cartIfAccepted, cart.discountCodes)
+      .then((reAppliedDiscounts) => {
+        setDiscountsIfAccepted(reAppliedDiscounts);
+
+        const cartWithDiscounts = { ...cartIfAccepted, discountCodes: reAppliedDiscounts };
+        return loadSurcharges({ ...state, products: getProducts(cartWithDiscounts) });
+      })
+      .then(setSurchargesIfAccepted)
+      .catch((e: unknown) => {
+        assertResponseError(e);
+        showAlert("Sorry, something went wrong. Please try again.", "error");
+        dispatch({ type: "cancel" });
+      });
+  }, [currentOffer]);
 
   const completeOffer = () => {
     if (!currentOffer) return;
     completedOfferIds.add(currentOffer.id);
     if (offers.length === 1) dispatch({ type: "validate" });
     setSurchargesIfAccepted(null);
+    setDiscountsIfAccepted(null);
     setOffers((prevOffers) => prevOffers?.slice(1) ?? prevOffers);
   };
   const acceptOffer = () => {
     const newCart = getCartIfAccepted();
+
+    if (discountsIfAccepted) {
+      newCart.discountCodes = discountsIfAccepted;
+    }
+
     setCart(newCart);
-    if (surchargesIfAccepted)
-      dispatch({
-        type: "update-products",
-        products: getProducts(newCart),
-        surcharges: surchargesIfAccepted,
-      });
+    if (surchargesIfAccepted || discountsIfAccepted) {
+      if (surchargesIfAccepted) {
+        dispatch({
+          type: "update-products",
+          products: getProducts(newCart),
+          surcharges: surchargesIfAccepted,
+        });
+      } else {
+        dispatch({
+          type: "update-products",
+          products: getProducts(newCart),
+        });
+      }
+    }
+
     completeOffer();
   };
 
@@ -630,7 +727,7 @@ export const CheckoutPage = ({
           setRecommendedProducts={setRecommendedProducts}
         />
       )}
-      {currentOffer && surchargesIfAccepted ? (
+      {currentOffer && surchargesIfAccepted && discountsIfAccepted ? (
         <Modal open onClose={completeOffer} title={currentOffer.text}>
           {currentOffer.type === "cross-sell" ? (
             <CrossSellModal crossSell={currentOffer} accept={acceptOffer} decline={completeOffer} />
