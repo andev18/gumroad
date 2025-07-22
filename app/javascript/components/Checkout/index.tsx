@@ -129,7 +129,7 @@ export const Checkout = ({
   }
 
   const hasAddedProduct = !!new URL(useOriginalLocation()).searchParams.get("product");
-  useRunOnce(() => {
+  const discountAppliedOnPageLoad = useRunOnce(() => {
     const url = new URL(window.location.href);
     const code = url.searchParams.get("code");
     if (hasAddedProduct) cart.discountCodes.forEach(({ code }) => void applyDiscount(code));
@@ -139,6 +139,18 @@ export const Checkout = ({
       window.history.replaceState(window.history.state, "", url.toString());
     }
   });
+
+  const productPermalinks = cart.items
+    .map((item) => item.product.permalink)
+    .sort()
+    .join(",");
+
+  React.useEffect(() => {
+    // only re-apply the discount if the cart items change after the page was loaded, like in upsell and cross-sell
+    if (discountAppliedOnPageLoad && cart.discountCodes.length > 0) {
+      cart.discountCodes.forEach(({ code }) => void applyDiscount(code));
+    }
+  }, [productPermalinks, discountAppliedOnPageLoad]);
 
   const discount = cart.items.reduce(
     (sum, item) =>
