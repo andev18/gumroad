@@ -148,28 +148,22 @@ const reApplyDiscountCodesToCart = async (
   cart: CartState,
   existingDiscountCodes: CartState["discountCodes"],
 ): Promise<CartState["discountCodes"]> => {
-  const products = Object.fromEntries(
-    cart.items.map((item) => [item.product.permalink, { permalink: item.product.permalink, quantity: item.quantity }]),
-  );
-
-  const discountResults = await Promise.all(
-    existingDiscountCodes.map(async (discountCode) => {
-      try {
-        const discount = await computeOfferDiscount({
-          code: discountCode.code,
-          products,
-        });
-        return { discountCode, discount, error: null };
-      } catch (error) {
-        return { discountCode, discount: null, error };
-      }
-    }),
-  );
-
   const newDiscountCodes: CartState["discountCodes"] = [];
 
-  for (const { discountCode, discount } of discountResults) {
-    if (!discount || !discount.valid || Object.keys(discount.products_data).length === 0) {
+  for (const discountCode of existingDiscountCodes) {
+    const products = Object.fromEntries(
+      cart.items.map((item) => [
+        item.product.permalink,
+        { permalink: item.product.permalink, quantity: item.quantity },
+      ]),
+    );
+
+    const discount = await computeOfferDiscount({
+      code: discountCode.code,
+      products,
+    });
+
+    if (!discount.valid || Object.keys(discount.products_data).length === 0) {
       continue;
     }
 
@@ -183,13 +177,13 @@ const reApplyDiscountCodesToCart = async (
       continue;
     }
 
-    newDiscountCodes.unshift({
-      code: discountCode.code.toLowerCase().trim(),
+    newDiscountCodes.splice(0, 0, {
+      code: discountCode.code,
       products: discount.products_data,
       fromUrl: discountCode.fromUrl,
     });
 
-    for (let i = newDiscountCodes.length - 1; i > 0; i--) {
+    for (let i = 1; i < newDiscountCodes.length; i++) {
       const existingCode = newDiscountCodes[i];
       if (!existingCode) continue;
 
@@ -205,6 +199,7 @@ const reApplyDiscountCodesToCart = async (
         };
       } else {
         newDiscountCodes.splice(i, 1);
+        i--;
       }
     }
   }
