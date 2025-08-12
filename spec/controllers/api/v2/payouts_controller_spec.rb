@@ -221,8 +221,9 @@ describe Api::V2::PayoutsController do
           expect(response_payout["sales"]).to be_an(Array)
           expect(response_payout["sales"].length).to eq(1)
 
-          sale_data = response_payout["sales"].first
-          expect(sale_data["id"]).to eq(successful_sale.external_id)
+          sale_id = response_payout["sales"].first
+          expect(sale_id).to be_a(String)
+          expect(sale_id).to eq(successful_sale.external_id)
         end
 
         it "includes sales array even when no sales exist" do
@@ -259,7 +260,7 @@ describe Api::V2::PayoutsController do
           get :show, params: @params
 
           response_payout = response.parsed_body["payout"]
-          expected_keys = %w[id amount currency status created_at processed_at payment_processor]
+          expected_keys = %w[id amount currency status created_at processed_at payment_processor bank_account_visual paypal_email]
           expect(response_payout.keys).to match_array(expected_keys)
           expect(response_payout).not_to have_key("sales")
         end
