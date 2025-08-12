@@ -131,7 +131,7 @@ describe Api::V2::PayoutsController do
 
       it "only returns payouts for the current seller" do
         create(:payment_completed, user: @other_seller, created_at: 1.day.ago)
-        seller_payout = create(:payment_completed, user: @seller, created_at: 2.hours.ago)
+        create(:payment_completed, user: @seller, created_at: 2.hours.ago)
 
         get :index, params: @params
 

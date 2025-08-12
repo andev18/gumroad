@@ -490,10 +490,10 @@ describe Payment do
       allow(ObfuscateIds).to receive(:encrypt).and_return("mocked_external_id")
 
       @payment = create(:payment,
-                       amount_cents: 2500,
-                       currency: "USD",
-                       processor: PayoutProcessorType::STRIPE,
-                       processor_fee_cents: 25)
+                        amount_cents: 2500,
+                        currency: "USD",
+                        processor: PayoutProcessorType::STRIPE,
+                        processor_fee_cents: 25)
     end
 
     it "has the right keys" do
