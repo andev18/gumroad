@@ -34,6 +34,7 @@ class CreatorHomePresenter
     # Preload products with thumbnail attachments to avoid N+1 queries
     product_permalinks = top_sales_data.map(&:first)
     products_by_permalink = seller.products
+      .visible
       .where(unique_permalink: product_permalinks)
       .includes(thumbnail_alive: { file_attachment: { blob: { variant_records: { image_attachment: :blob } } } })
       .index_by(&:unique_permalink)

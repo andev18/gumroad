@@ -142,6 +142,9 @@ describe CreatorHomePresenter do
       create_list(:purchase, 2, link: product3, price_cents: product3.price_cents, created_at: 6.days.ago)
       create_list(:purchase, 7, link: product4, price_cents: product4.price_cents, created_at: 1.day.ago)
 
+      # Mark product2 as deleted - it should not appear in results despite having sales
+      product2.mark_deleted!
+
       expect(presenter.creator_home_props[:sales]).to match(
         [
           {
@@ -154,17 +157,6 @@ describe CreatorHomePresenter do
             "today" => 0,
             "last_7" => 693,
             "last_30" => 693,
-          },
-          {
-            "id" => product2.unique_permalink,
-            "name" => "The Works of Edgar Gumstein",
-            "thumbnail" => nil,
-            "revenue" => 500.0,
-            "sales" => 5,
-            "visits" => 0,
-            "today" => 0,
-            "last_7" => 500,
-            "last_30" => 500,
           },
           {
             "id" => product3.unique_permalink,
