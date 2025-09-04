@@ -20,7 +20,7 @@ class SupportController < ApplicationController
   def create_unauthenticated_ticket
     skip_authorization
 
-    return render json: { error: "Missing required parameters" }, status: :bad_request unless validate_request_params
+    return unless validate_request_params
     return render json: { error: "reCAPTCHA verification failed" }, status: :unprocessable_entity unless valid_recaptcha_response?(site_key: GlobalConfig.get("RECAPTCHA_SUPPORT_SITE_KEY"))
 
     email = params[:email].strip.downcase
@@ -49,7 +49,7 @@ class SupportController < ApplicationController
         return false
       end
 
-      unless valid_email?(params[:email])
+      unless valid_email?(params[:email].strip.downcase)
         render json: { error: "Invalid email address" }, status: :bad_request
         return false
       end
