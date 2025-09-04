@@ -5,10 +5,11 @@ import { createCast } from "ts-safe-cast";
 import { register } from "$app/utils/serverComponentUtil";
 
 import SupportPortal from "$app/components/support/SupportPortal";
+import UnauthenticatedSupportPortal from "$app/components/support/UnauthenticatedSupportPortal";
 
 type Props = {
   host: string;
-  session: {
+  session?: {
     email?: string | null;
     emailHash?: string | null;
     timestamp?: number | null;
@@ -18,10 +19,15 @@ type Props = {
       links?: Record<string, string> | null;
     } | null;
     currentToken?: string | null;
-  };
+  } | null;
+  recaptcha_site_key?: string | null;
 };
 
-function SupportPortalPage({ host, session }: Props) {
+function SupportPortalPage({ host, session, recaptcha_site_key }: Props) {
+  if (!session) {
+    return <UnauthenticatedSupportPortal recaptchaSiteKey={recaptcha_site_key || ""} />;
+  }
+
   return (
     <HelperClientProvider host={host} session={session}>
       <SupportPortal />
