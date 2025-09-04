@@ -41,7 +41,7 @@ export function UnauthenticatedNewTicketModal({
 
     setIsSubmitting(true);
     try {
-      const recaptchaResponse = await executeRecaptcha();
+      const recaptchaResponse = recaptchaSiteKey ? await executeRecaptcha() : null;
 
       const response = await fetch("/support/create_unauthenticated_ticket", {
         method: "POST",

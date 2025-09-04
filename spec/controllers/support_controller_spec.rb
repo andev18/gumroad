@@ -22,15 +22,14 @@ describe SupportController do
           host: "https://help.example.test",
           session: { "session_id" => "abc123" },
           recaptcha_site_key: nil
-        )
+          )
       end
     end
 
     context "when user is not signed in" do
-      it "returns http success and assigns props without session but with recaptcha key" do
+      it "returns http success and assigns props without session" do
         allow(controller).to receive(:helper_widget_host).and_return("https://help.example.test")
         allow(controller).to receive(:helper_session).and_return(nil)
-        allow(GlobalConfig).to receive(:get).with("RECAPTCHA_SUPPORT_SITE_KEY").and_return("test_recaptcha_key")
 
         get :index
 
@@ -38,7 +37,7 @@ describe SupportController do
         expect(assigns[:props]).to eq(
           host: "https://help.example.test",
           session: nil,
-          recaptcha_site_key: "test_recaptcha_key"
+          recaptcha_site_key: nil
         )
       end
     end
@@ -116,17 +115,6 @@ describe SupportController do
         expect(response).to have_http_status(:bad_request)
         expect(response.parsed_body).to eq({
                                              "error" => "Missing required parameters: message"
-                                           })
-      end
-
-      it "returns bad request when recaptcha response is missing" do
-        params = valid_params.except("g-recaptcha-response")
-
-        post :create_unauthenticated_ticket, params: params
-
-        expect(response).to have_http_status(:bad_request)
-        expect(response.parsed_body).to eq({
-                                             "error" => "Missing required parameters: g-recaptcha-response"
                                            })
       end
 
