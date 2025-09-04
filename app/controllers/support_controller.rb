@@ -30,8 +30,7 @@ class SupportController < ApplicationController
     begin
       conversation_slug = create_helper_conversation(email: email, subject: subject, message: message)
       render json: { success: true, conversation_slug: conversation_slug }
-    rescue => e
-      Rails.logger.error "Failed to create Helper conversation: #{e.message}"
+    rescue
       render json: { error: "Failed to create support ticket" }, status: :internal_server_error
     end
   end
@@ -116,7 +115,6 @@ class SupportController < ApplicationController
         )
 
         unless session_response.success?
-          Rails.logger.error "Helper session creation failed: #{session_response.code} - #{session_response.body}"
           raise "Helper session creation failed: #{session_response.code}"
         end
         helper_token = session_response.parsed_response["token"]
@@ -135,7 +133,6 @@ class SupportController < ApplicationController
         )
 
         unless conversation_response.success?
-          Rails.logger.error "Helper conversation creation failed: #{conversation_response.code} - #{conversation_response.body}"
           raise "Helper conversation creation failed: #{conversation_response.code}"
         end
 
@@ -152,7 +149,6 @@ class SupportController < ApplicationController
         )
 
         unless message_response.success?
-          Rails.logger.error "Helper message creation failed: #{message_response.code} - #{message_response.body}"
           raise "Helper message creation failed: #{message_response.code}"
         end
 
@@ -162,7 +158,6 @@ class SupportController < ApplicationController
         )
 
       rescue => e
-        Rails.logger.error "Helper API integration error: #{e.message}"
         raise e
       end
     end
