@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe "Support Portal Feature", type: :system, js: true do
+describe "Support Portal", type: :system, js: true do
   let(:seller) { create(:named_seller) }
 
   before do
