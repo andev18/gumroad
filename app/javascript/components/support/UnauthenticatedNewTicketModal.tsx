@@ -1,10 +1,8 @@
 import React from "react";
 
-import FileUtils from "$app/utils/file";
+import { assertResponseError, request, ResponseError } from "$app/utils/request";
 
 import { Button } from "$app/components/Button";
-import { FileRowContent } from "$app/components/FileRowContent";
-import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { showAlert } from "$app/components/server-components/Alert";
 import { useRecaptcha, RecaptchaCancelledError } from "$app/components/useRecaptcha";
@@ -20,7 +18,6 @@ export function UnauthenticatedNewTicketModal({
   onCreated: () => void;
   recaptchaSiteKey: string;
 }) {
-  const formRef = React.useRef<HTMLFormElement | null>(null);
   const { container: recaptchaContainer, execute: executeRecaptcha } = useRecaptcha({
     siteKey: recaptchaSiteKey || null,
   });
@@ -28,10 +25,8 @@ export function UnauthenticatedNewTicketModal({
   const [email, setEmail] = React.useState("");
   const [subject, setSubject] = React.useState("");
   const [message, setMessage] = React.useState("");
-  const [attachments, setAttachments] = React.useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const formRef = React.useRef<HTMLFormElement | null>(null);
 
   const isFormValid = email.trim() && subject.trim() && message.trim();
 
@@ -43,42 +38,29 @@ export function UnauthenticatedNewTicketModal({
     try {
       const recaptchaResponse = recaptchaSiteKey ? await executeRecaptcha() : null;
 
-      const response = await fetch("/support/create_unauthenticated_ticket", {
+      const response = await request({
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content || "",
-        },
-        body: JSON.stringify({
+        url: "/support/create_unauthenticated_ticket",
+        accept: "json",
+        data: {
           email: email.trim(),
           subject: subject.trim(),
           message: message.trim(),
           "g-recaptcha-response": recaptchaResponse,
-        }),
+        },
       });
 
-      if (response.ok) {
-        showAlert("Your support ticket has been created successfully! We'll get back to you via email.", "success");
-        onCreated();
-        setEmail("");
-        setSubject("");
-        setMessage("");
-        setAttachments([]);
-      } else {
-        let errorMessage = "Failed to create support ticket";
-        const data: unknown = await response.json();
-        if (typeof data === "object" && data !== null && "error" in data && typeof data.error === "string") {
-          errorMessage = data.error;
-        }
-        showAlert(errorMessage, "error");
-      }
-    } catch (error: unknown) {
-      if (error instanceof RecaptchaCancelledError) {
-        setIsSubmitting(false);
-        return;
-      }
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      showAlert(`Failed to create support ticket. Please try again. ${errorMessage}`, "error");
+      if (!response.ok) throw new ResponseError("Failed to create support ticket");
+
+      showAlert("Your support ticket has been created successfully! We'll get back to you via email.", "success");
+      onCreated();
+      setEmail("");
+      setSubject("");
+      setMessage("");
+    } catch (error) {
+      if (error instanceof RecaptchaCancelledError) return;
+      assertResponseError(error);
+      showAlert(error.message, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -116,18 +98,11 @@ export function UnauthenticatedNewTicketModal({
             placeholder="Your email address"
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full"
           />
         </div>
         <div>
           <label className="sr-only">Subject</label>
-          <input
-            value={subject}
-            placeholder="Subject"
-            onChange={(e) => setSubject(e.target.value)}
-            required
-            className="w-full"
-          />
+          <input value={subject} placeholder="Subject" onChange={(e) => setSubject(e.target.value)} required />
         </div>
         <div>
           <label className="sr-only">Message</label>
@@ -137,49 +112,8 @@ export function UnauthenticatedNewTicketModal({
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Tell us about your issue or question..."
             required
-            className="w-full"
           />
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          style={{ display: "none" }}
-          onChange={(e) => {
-            const files = Array.from(e.target.files ?? []);
-            if (files.length === 0) return;
-            setAttachments((prev) => [...prev, ...files]);
-            e.currentTarget.value = "";
-          }}
-        />
-        {attachments.length > 0 ? (
-          <div role="list" className="rows">
-            {attachments.map((file, i) => (
-              <div key={i} role="listitem" className="row">
-                <FileRowContent
-                  name={FileUtils.getFileNameWithoutExtension(file.name)}
-                  extension={FileUtils.getFileExtension(file.name).toUpperCase()}
-                  externalLinkUrl={null}
-                  details={
-                    <>
-                      <li>{FileUtils.getFileExtension(file.name).toUpperCase()}</li>
-                      <li>{FileUtils.getFullFileSizeString(file.size)}</li>
-                    </>
-                  }
-                />
-                <Button
-                  onClick={() => {
-                    setAttachments((prev) => prev.filter((_, index) => index !== i));
-                  }}
-                  disabled={isSubmitting}
-                >
-                  <Icon name="x" />
-                  <span className="sr-only">Remove {file.name}</span>
-                </Button>
-              </div>
-            ))}
-          </div>
-        ) : null}
         {recaptchaContainer}
       </form>
     </Modal>

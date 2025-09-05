@@ -43,8 +43,8 @@ export default function UnauthenticatedSupportPortal({ recaptchaSiteKey }: Props
             </figure>
             <h2>Need a hand? We're here for you.</h2>
             <p>
-              Got a question about Gumroad, buying products, or need help with your account? Send us a message and we'll
-              get back to you as soon as possible.
+              Got a question about selling, payouts, or your products? Send us a message and we'll get back to you as
+              soon as possible.
             </p>
             <Button color="accent" onClick={() => setIsNewTicketOpen(true)}>
               Contact support
