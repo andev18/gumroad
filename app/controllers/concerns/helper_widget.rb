@@ -31,9 +31,9 @@ module HelperWidget
       end
     end
 
-    def helper_widget_email_hmac(timestamp)
-      message = "#{current_seller.email}:#{timestamp}"
-
+    def helper_widget_email_hmac(timestamp, email: nil)
+      email ||= current_seller.email
+      message = "#{email}:#{timestamp}"
       OpenSSL::HMAC.hexdigest(
         "sha256",
         GlobalConfig.get("HELPER_WIDGET_SECRET"),

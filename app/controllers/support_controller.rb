@@ -58,7 +58,7 @@ class SupportController < ApplicationController
 
     def create_helper_conversation(email:, subject:, message:)
       timestamp = (Time.current.to_f * 1000).to_i
-      email_hash = create_guest_email_hash(email, timestamp)
+      email_hash = helper_widget_email_hmac(timestamp, email: email)
 
       conversation_params = {
         subject: subject,
@@ -77,84 +77,64 @@ class SupportController < ApplicationController
       end
     end
 
-    def create_guest_email_hash(email, timestamp)
-      message = "#{email}:#{timestamp}"
-      OpenSSL::HMAC.hexdigest(
-        "sha256",
-        GlobalConfig.get("HELPER_WIDGET_SECRET"),
-        message
-      )
-    end
-
     def create_conversation_via_api(params)
       helper_host = GlobalConfig.get("HELPER_WIDGET_HOST")
       raise "Helper widget host not configured" unless helper_host.present?
 
-      begin
-        guest_session = {
+      guest_session = {
+        email: params[:from_email],
+        emailHash: params[:email_hash],
+        timestamp: params[:timestamp],
+        customerMetadata: {
+          name: "Guest User",
           email: params[:from_email],
-          emailHash: params[:email_hash],
-          timestamp: params[:timestamp],
-          customerMetadata: {
-            name: "Guest User",
-            email: params[:from_email],
-            value: 0,
-            links: {}
-          }
+          value: 0,
+          links: {}
         }
+      }
 
-        session_response = HTTParty.post(
-          "#{helper_host}/api/widget/session",
-          headers: { "Content-Type" => "application/json" },
-          body: guest_session.to_json,
-          timeout: 10
-        )
+      session_response = HTTParty.post(
+        "#{helper_host}/api/widget/session",
+        body: guest_session.to_json
+      )
 
-        unless session_response.success?
-          raise "Helper session creation failed: #{session_response.code}"
-        end
-        helper_token = session_response.parsed_response["token"]
-
-        conversation_response = HTTParty.post(
-          "#{helper_host}/api/chat/conversation",
-          headers: {
-            "Content-Type" => "application/json",
-            "Authorization" => "Bearer #{helper_token}"
-          },
-          body: {
-            subject: params[:subject],
-            isPrompt: false
-          }.to_json,
-          timeout: 10
-        )
-
-        unless conversation_response.success?
-          raise "Helper conversation creation failed: #{conversation_response.code}"
-        end
-
-        conversation_slug = conversation_response.parsed_response["conversationSlug"]
-
-        message_response = HTTParty.post(
-          "#{helper_host}/api/chat/conversation/#{conversation_slug}/message",
-          headers: {
-            "Content-Type" => "application/json",
-            "Authorization" => "Bearer #{helper_token}"
-          },
-          body: { content: params[:message] }.to_json,
-          timeout: 10
-        )
-
-        unless message_response.success?
-          raise "Helper message creation failed: #{message_response.code}"
-        end
-
-        OpenStruct.new(
-          success?: true,
-          parsed_response: { "conversation_slug" => conversation_slug }
-        )
-
-      rescue => e
-        raise e
+      unless session_response.success?
+        raise "Helper session creation failed: #{session_response.code}"
       end
+      helper_token = session_response.parsed_response["token"]
+
+      conversation_response = HTTParty.post(
+        "#{helper_host}/api/chat/conversation",
+        headers: {
+          "Authorization" => "Bearer #{helper_token}"
+        },
+        body: {
+          subject: params[:subject],
+          isPrompt: false
+        }.to_json
+      )
+
+      unless conversation_response.success?
+        raise "Helper conversation creation failed: #{conversation_response.code}"
+      end
+
+      conversation_slug = conversation_response.parsed_response["conversationSlug"]
+
+      message_response = HTTParty.post(
+        "#{helper_host}/api/chat/conversation/#{conversation_slug}/message",
+        headers: {
+          "Authorization" => "Bearer #{helper_token}"
+        },
+        body: { content: params[:message] }.to_json
+      )
+
+      unless message_response.success?
+        raise "Helper message creation failed: #{message_response.code}"
+      end
+
+      OpenStruct.new(
+        success?: true,
+        parsed_response: { "conversation_slug" => conversation_slug }
+      )
     end
 end
