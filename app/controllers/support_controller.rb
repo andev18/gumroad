@@ -108,10 +108,7 @@ class SupportController < ApplicationController
         headers: {
           "Authorization" => "Bearer #{helper_token}"
         },
-        body: {
-          subject: params[:subject],
-          isPrompt: false
-        }.to_json
+        body: { subject: params[:subject] }.to_json
       )
 
       unless conversation_response.success?
