@@ -34,7 +34,7 @@ export function SupportHeader({
           <a href={Routes.help_center_root_path()} className="button" aria-label="Search" title="Search">
             <span className="icon icon-solid-search"></span>
           </a>
-        ) : hasHelperSession ? (
+        ) : !pathname.startsWith(Routes.support_index_path()) || hasHelperSession ? (
           <Button color="accent" onClick={onOpenNewTicket}>
             New ticket
           </Button>

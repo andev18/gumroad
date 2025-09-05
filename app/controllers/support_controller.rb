@@ -5,8 +5,6 @@ class SupportController < ApplicationController
   include HelperWidget
 
   def index
-    skip_authorization
-
     e404 if helper_widget_host.blank?
 
     @title = "Support"
@@ -18,8 +16,6 @@ class SupportController < ApplicationController
   end
 
   def create_unauthenticated_ticket
-    skip_authorization
-
     return unless validate_request_params
     return render json: { error: "reCAPTCHA verification failed" }, status: :unprocessable_entity unless valid_recaptcha_response?(site_key: GlobalConfig.get("RECAPTCHA_SUPPORT_SITE_KEY"))
 
