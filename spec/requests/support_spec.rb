@@ -33,7 +33,7 @@ describe "Support Portal", type: :system, js: true do
       visit "/support"
 
       expect(page).to have_content("Need a hand? We're here for you.")
-      expect(page).to have_content("Got a question about Gumroad, buying products, or need help with your account?")
+      expect(page).to have_content("Got a question about selling, payouts, or your products?")
       expect(page).to have_button("Contact support")
       expect(page).to have_link("Sign in", href: "/login")
 
