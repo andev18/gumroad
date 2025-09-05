@@ -84,13 +84,7 @@ class SupportController < ApplicationController
       guest_session = {
         email: params[:from_email],
         emailHash: params[:email_hash],
-        timestamp: params[:timestamp],
-        customerMetadata: {
-          name: "Guest User",
-          email: params[:from_email],
-          value: 0,
-          links: {}
-        }
+        timestamp: params[:timestamp]
       }
 
       session_response = HTTParty.post(

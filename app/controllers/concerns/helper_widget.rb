@@ -24,12 +24,6 @@ module HelperWidget
   end
 
   private
-    def helper_customer_metadata
-      Rails.cache.fetch("helper_customer_metadata/#{current_seller.id}", expires_in: 1.hour) do
-        HelperUserInfoService.new(email: current_seller.email).metadata
-      end
-    end
-
     def helper_widget_email_hmac(timestamp, email: nil)
       email ||= current_seller.email
       message = "#{email}:#{timestamp}"
