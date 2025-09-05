@@ -20,7 +20,6 @@ module HelperWidget
       email: current_seller.email,
       emailHash: helper_widget_email_hmac(timestamp),
       timestamp:,
-      customerMetadata: helper_customer_metadata,
     }
   end
 
@@ -34,6 +33,7 @@ module HelperWidget
     def helper_widget_email_hmac(timestamp, email: nil)
       email ||= current_seller.email
       message = "#{email}:#{timestamp}"
+
       OpenSSL::HMAC.hexdigest(
         "sha256",
         GlobalConfig.get("HELPER_WIDGET_SECRET"),
