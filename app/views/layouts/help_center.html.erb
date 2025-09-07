@@ -16,9 +16,7 @@
   <%= stylesheet_pack_tag :help_center %>
 <% end %>
 
-<% unless user_signed_in? %>
-  <%= render "shared/recaptcha_script" %>
-<% end %>
+<%= render "shared/recaptcha_script" unless user_signed_in? %>
 
 <% content_for :content do %>
   <main>

@@ -29,7 +29,7 @@ describe "Help Center", type: :system, js: true do
   end
 
   describe "the user is unauthenticated" do
-    it "shows the support portal and support modal" do
+    it "shows the contact support button and support modal" do
       visit "/help"
 
       expect(page).to have_button("Contact support")
