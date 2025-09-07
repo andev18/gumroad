@@ -12,7 +12,7 @@ class SupportController < ApplicationController
     @title = "Support"
     @props = {
       host: helper_widget_host,
-      session: helper_session
+      session: helper_session,
     }
   end
 

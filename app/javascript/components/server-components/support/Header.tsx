@@ -39,14 +39,6 @@ export function SupportHeader({
     }
   }, [isNewTicketOpen, isAnonymousUserOnHelpCenter]);
 
-  const handleNewTicketClick = () => {
-    if (isAnonymousUserOnHelpCenter && recaptchaSiteKey) {
-      setIsNewTicketOpen(true);
-    } else {
-      onOpenNewTicket();
-    }
-  };
-
   return (
     <>
       <h1 className="hidden group-[.sidebar-nav]/body:block">Help</h1>
@@ -61,7 +53,10 @@ export function SupportHeader({
             <span className="icon icon-solid-search"></span>
           </a>
         ) : !pathname.startsWith(Routes.support_index_path()) || hasHelperSession ? (
-          <Button color="accent" onClick={handleNewTicketClick}>
+          <Button
+            color="accent"
+            onClick={isAnonymousUserOnHelpCenter ? () => setIsNewTicketOpen(true) : onOpenNewTicket}
+          >
             {hasHelperSession ? "New ticket" : "Contact support"}
           </Button>
         ) : null}
@@ -88,12 +83,12 @@ export function SupportHeader({
         </div>
       ) : null}
 
-      {isAnonymousUserOnHelpCenter && recaptchaSiteKey ? (
+      {isAnonymousUserOnHelpCenter ? (
         <UnauthenticatedNewTicketModal
           open={isNewTicketOpen}
           onClose={() => setIsNewTicketOpen(false)}
           onCreated={() => setIsNewTicketOpen(false)}
-          recaptchaSiteKey={recaptchaSiteKey}
+          recaptchaSiteKey={recaptchaSiteKey ?? null}
         />
       ) : null}
     </>

@@ -16,10 +16,10 @@ export function UnauthenticatedNewTicketModal({
   open: boolean;
   onClose: () => void;
   onCreated: () => void;
-  recaptchaSiteKey: string;
+  recaptchaSiteKey: string | null;
 }) {
   const { container: recaptchaContainer, execute: executeRecaptcha } = useRecaptcha({
-    siteKey: recaptchaSiteKey || null,
+    siteKey: recaptchaSiteKey,
   });
 
   const [email, setEmail] = React.useState("");
