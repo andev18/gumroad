@@ -20,25 +20,16 @@ describe SupportController do
         expect(response).to be_successful
         expect(assigns[:props]).to eq(
           host: "https://help.example.test",
-          session: { "session_id" => "abc123" },
-          recaptcha_site_key: nil
-          )
+          session: { "session_id" => "abc123" }
+        )
       end
     end
 
     context "when user is not signed in" do
-      it "returns http success and assigns props without session" do
-        allow(controller).to receive(:helper_widget_host).and_return("https://help.example.test")
-        allow(controller).to receive(:helper_session).and_return(nil)
-
+      it "redirects to help center" do
         get :index
 
-        expect(response).to be_successful
-        expect(assigns[:props]).to eq(
-          host: "https://help.example.test",
-          session: nil,
-          recaptcha_site_key: nil
-        )
+        expect(response).to redirect_to(help_center_root_path)
       end
     end
   end

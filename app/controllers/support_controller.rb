@@ -5,13 +5,14 @@ class SupportController < ApplicationController
   include HelperWidget
 
   def index
+    return redirect_to help_center_root_path(params.permit(:new_ticket)) unless user_signed_in?
+
     e404 if helper_widget_host.blank?
 
     @title = "Support"
     @props = {
       host: helper_widget_host,
-      session: helper_session,
-      recaptcha_site_key: Rails.env.test? || user_signed_in? ? nil : GlobalConfig.get("RECAPTCHA_SUPPORT_SITE_KEY")
+      session: helper_session
     }
   end
 
