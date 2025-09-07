@@ -52,12 +52,13 @@ export function SupportHeader({
           <a href={Routes.help_center_root_path()} className="button" aria-label="Search" title="Search">
             <span className="icon icon-solid-search"></span>
           </a>
-        ) : !pathname.startsWith(Routes.support_index_path()) || hasHelperSession ? (
-          <Button
-            color="accent"
-            onClick={isAnonymousUserOnHelpCenter ? () => setIsNewTicketOpen(true) : onOpenNewTicket}
-          >
-            {hasHelperSession ? "New ticket" : "Contact support"}
+        ) : isAnonymousUserOnHelpCenter ? (
+          <Button color="accent" onClick={() => setIsNewTicketOpen(true)}>
+            Contact support
+          </Button>
+        ) : hasHelperSession ? (
+          <Button color="accent" onClick={onOpenNewTicket}>
+            New ticket
           </Button>
         ) : null}
       </div>
