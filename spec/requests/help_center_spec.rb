@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe "Support Portal", type: :system, js: true do
+describe "Help Center", type: :system, js: true do
   let(:seller) { create(:named_seller) }
 
   before do
@@ -30,12 +30,9 @@ describe "Support Portal", type: :system, js: true do
 
   describe "the user is unauthenticated" do
     it "shows the support portal and support modal" do
-      visit "/support"
+      visit "/help"
 
-      expect(page).to have_content("Need a hand? We're here for you.")
-      expect(page).to have_content("Got a question about selling, payouts, or your products?")
       expect(page).to have_button("Contact support")
-      expect(page).to have_link("Sign in", href: "/login")
 
       click_on "Contact support"
 
@@ -46,7 +43,7 @@ describe "Support Portal", type: :system, js: true do
     end
 
     it "successfully submits a support ticket form" do
-      visit "/support"
+      visit "/help"
 
       click_on "Contact support"
 
