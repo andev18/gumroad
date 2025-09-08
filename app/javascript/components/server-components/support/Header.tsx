@@ -25,19 +25,19 @@ export function SupportHeader({
     pathname.startsWith(Routes.help_center_root_path()) && pathname !== Routes.help_center_root_path();
   const isAnonymousUserOnHelpCenter = !hasHelperSession && pathname === Routes.help_center_root_path();
 
-  const [isNewTicketOpen, setIsNewTicketOpen] = React.useState(
+  const [isUnauthenticatedNewTicketOpen, setIsUnauthenticatedNewTicketOpen] = React.useState(
     isAnonymousUserOnHelpCenter && !!searchParams.get("new_ticket"),
   );
 
   React.useEffect(() => {
     if (isAnonymousUserOnHelpCenter) {
       const url = new URL(location.href);
-      if (!isNewTicketOpen && url.searchParams.get("new_ticket")) {
+      if (!isUnauthenticatedNewTicketOpen && url.searchParams.get("new_ticket")) {
         url.searchParams.delete("new_ticket");
         history.replaceState(null, "", url.toString());
       }
     }
-  }, [isNewTicketOpen, isAnonymousUserOnHelpCenter]);
+  }, [isUnauthenticatedNewTicketOpen, isAnonymousUserOnHelpCenter]);
 
   return (
     <>
@@ -53,7 +53,7 @@ export function SupportHeader({
             <span className="icon icon-solid-search"></span>
           </a>
         ) : isAnonymousUserOnHelpCenter ? (
-          <Button color="accent" onClick={() => setIsNewTicketOpen(true)}>
+          <Button color="accent" onClick={() => setIsUnauthenticatedNewTicketOpen(true)}>
             Contact support
           </Button>
         ) : hasHelperSession ? (
@@ -86,9 +86,9 @@ export function SupportHeader({
 
       {isAnonymousUserOnHelpCenter ? (
         <UnauthenticatedNewTicketModal
-          open={isNewTicketOpen}
-          onClose={() => setIsNewTicketOpen(false)}
-          onCreated={() => setIsNewTicketOpen(false)}
+          open={isUnauthenticatedNewTicketOpen}
+          onClose={() => setIsUnauthenticatedNewTicketOpen(false)}
+          onCreated={() => setIsUnauthenticatedNewTicketOpen(false)}
           recaptchaSiteKey={recaptchaSiteKey ?? null}
         />
       ) : null}
