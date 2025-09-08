@@ -52,9 +52,30 @@ describe SupportController do
     end
 
     context "with valid parameters and successful Helper API" do
-      it "creates a support ticket and returns success" do
-        allow(controller).to receive(:create_helper_conversation).and_return("test-conversation-123")
+      before do
+        stub_request(:post, "https://helper.test/api/widget/session")
+          .to_return(
+            status: 200,
+            body: { token: "mock_helper_token" }.to_json,
+            headers: { "Content-Type" => "application/json" }
+          )
 
+        stub_request(:post, "https://helper.test/api/chat/conversation")
+          .to_return(
+            status: 200,
+            body: { conversationSlug: "test-conversation-123" }.to_json,
+            headers: { "Content-Type" => "application/json" }
+          )
+
+        stub_request(:post, "https://helper.test/api/chat/conversation/test-conversation-123/message")
+          .to_return(
+            status: 200,
+            body: { success: true }.to_json,
+            headers: { "Content-Type" => "application/json" }
+          )
+      end
+
+      it "creates a support ticket and returns success" do
         post :create_unauthenticated_ticket, params: valid_params
 
         expect(response).to have_http_status(:success)
@@ -62,16 +83,34 @@ describe SupportController do
                                              "success" => true,
                                              "conversation_slug" => "test-conversation-123"
                                            })
-      end
 
-      it "calls create_helper_conversation with correct parameters" do
-        expect(controller).to receive(:create_helper_conversation).with(
-          email: "test@example.com",
-          subject: "Test subject",
-          message: "Test message"
-        ).and_return("test-conversation-123")
+        expect(WebMock).to have_requested(:post, "https://helper.test/api/widget/session")
+          .with(body: ->(body) {
+            expect(JSON.parse(body)).to include(
+              "email" => "test@example.com",
+              "emailHash" => kind_of(String),
+              "timestamp" => kind_of(Integer)
+            )
+          })
 
-        post :create_unauthenticated_ticket, params: valid_params
+        expect(WebMock).to have_requested(:post, "https://helper.test/api/chat/conversation")
+          .with(
+            headers: { "Authorization" => "Bearer mock_helper_token" },
+            body: ->(body) {
+              expect(JSON.parse(body)).to include("subject" => "Test subject")
+            }
+          )
+
+        expect(WebMock).to have_requested(:post, "https://helper.test/api/chat/conversation/test-conversation-123/message")
+          .with(
+            headers: { "Authorization" => "Bearer mock_helper_token" },
+            body: ->(body) {
+              expect(JSON.parse(body)).to include(
+                "content" => "Test message",
+                "customerInfoUrl" => end_with("/internal/helper/users/user_info")
+              )
+            }
+          )
       end
     end
 
