@@ -61,15 +61,13 @@ class SupportController < ApplicationController
       timestamp = (Time.current.to_f * 1000).to_i
       email_hash = helper_widget_email_hmac(timestamp, email: email)
 
-      conversation_params = {
+      response = create_conversation_via_api(
         subject: subject,
         from_email: email,
         message: message,
         timestamp: timestamp,
         email_hash: email_hash
-      }
-
-      response = create_conversation_via_api(conversation_params)
+      )
 
       if response.success?
         response.parsed_response["conversation_slug"]
