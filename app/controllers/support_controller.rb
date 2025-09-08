@@ -115,7 +115,10 @@ class SupportController < ApplicationController
         headers: {
           "Authorization" => "Bearer #{helper_token}"
         },
-        body: { content: params[:message] }.to_json
+        body: {
+          content: params[:message],
+          customerInfoUrl: user_info_api_internal_helper_users_url(host: API_DOMAIN)
+        }.to_json
       )
 
       unless message_response.success?
