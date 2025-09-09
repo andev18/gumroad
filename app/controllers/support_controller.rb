@@ -18,7 +18,7 @@ class SupportController < ApplicationController
 
   def create_unauthenticated_ticket
     return unless validate_request_params
-    return render json: { error: "reCAPTCHA verification failed" }, status: :unprocessable_entity unless valid_recaptcha_response?(site_key: GlobalConfig.get("RECAPTCHA_SUPPORT_SITE_KEY"))
+    return render json: { error: "reCAPTCHA verification failed" }, status: :unprocessable_entity unless valid_recaptcha_response?(site_key: GlobalConfig.get("RECAPTCHA_LOGIN_SITE_KEY"))
 
     email = params[:email].strip.downcase
     subject = params[:subject].strip

@@ -45,7 +45,7 @@ describe SupportController do
     end
 
     before do
-      allow(GlobalConfig).to receive(:get).with("RECAPTCHA_SUPPORT_SITE_KEY").and_return("test_recaptcha_key")
+      allow(GlobalConfig).to receive(:get).with("RECAPTCHA_LOGIN_SITE_KEY").and_return("test_recaptcha_key")
       allow(GlobalConfig).to receive(:get).with("HELPER_WIDGET_HOST").and_return("https://helper.test")
       allow(GlobalConfig).to receive(:get).with("HELPER_WIDGET_SECRET").and_return("test_secret")
       allow(controller).to receive(:valid_recaptcha_response?).and_return(true)
