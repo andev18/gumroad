@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe CheckStripeFingerprintWorker do
+describe FlagFraudIfSuspendedStripeFingerprintWorker do
   describe "#perform" do
     before do
       @stripe_fingerprint = "fp_test_fingerprint_123"
@@ -18,8 +18,8 @@ describe CheckStripeFingerprintWorker do
       described_class.new.perform(@user.id)
 
       expect(@user.reload.flagged_for_fraud?).to be(true)
-      expect(@user.comments.last.content).to include("Flagged for fraud by CheckStripeFingerprint")
-      expect(@user.comments.last.author_name).to eq("CheckStripeFingerprint")
+      expect(@user.comments.last.content).to include("Flagged for fraud by FlagFraudIfSuspendedStripeFingerprint")
+      expect(@user.comments.last.author_name).to eq("FlagFraudIfSuspendedStripeFingerprint")
     end
 
     it "does not flag user if no suspended accounts share the same fingerprint" do

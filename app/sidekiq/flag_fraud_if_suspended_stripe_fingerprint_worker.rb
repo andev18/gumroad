@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CheckStripeFingerprintWorker
+class FlagFraudIfSuspendedStripeFingerprintWorker
   include Sidekiq::Job
   sidekiq_options retry: 0, queue: :default
 
@@ -13,12 +13,11 @@ class CheckStripeFingerprintWorker
 
     stripe_fingerprint = active_bank_account.stripe_fingerprint
 
-    # Find other users with bank accounts that have the same stripe fingerprint and are suspended
     banned_accounts_with_same_fingerprint = User.joins(:bank_accounts)
                                                 .where(bank_accounts: { stripe_fingerprint: stripe_fingerprint })
                                                 .where(user_risk_state: ["suspended_for_tos_violation", "suspended_for_fraud"])
                                                 .where.not(id: user.id)
 
-    user.flag_for_fraud!(author_name: "CheckStripeFingerprint") if banned_accounts_with_same_fingerprint.exists?
+    user.flag_for_fraud!(author_name: "FlagFraudIfSuspendedStripeFingerprint") if banned_accounts_with_same_fingerprint.exists?
   end
 end
