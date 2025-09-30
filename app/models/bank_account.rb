@@ -22,6 +22,7 @@ class BankAccount < ApplicationRecord
   after_create_commit :handle_stripe_bank_account
   after_create_commit :handle_compliance_info_request
   after_create :update_user_products_search_index
+  after_update :check_stripe_fingerprint, if: :saved_change_to_stripe_fingerprint?
 
   # This state machine can be expanded once we implement a complex verification process.
   state_machine(:state, initial: :unverified) do
@@ -97,6 +98,10 @@ class BankAccount < ApplicationRecord
 
     def handle_compliance_info_request
       UserComplianceInfoRequest.handle_new_bank_account(self)
+    end
+
+    def check_stripe_fingerprint
+      CheckStripeFingerprintWorker.perform_async(user_id) if user_id.present?
     end
 
     def account_number_decrypted

@@ -103,6 +103,7 @@ module User::Risk
 
   def suspend_sellers_other_accounts
     SuspendAccountsWithPaymentAddressWorker.perform_in(5.seconds, id)
+    SuspendAccountsWithStripeFingerprintWorker.perform_in(5.seconds, id)
   end
 
   def block_seller_ip!
