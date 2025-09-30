@@ -46,7 +46,6 @@ describe User::Risk do
       @stripe_fingerprint = "test_stripe_fingerprint"
       @user = create(:user)
       @user_2 = create(:user, user_risk_state: :suspended_for_fraud)
-      create(:user)
 
       create(:ach_account, user: @user, stripe_fingerprint: @stripe_fingerprint)
       create(:ach_account, user: @user_2, stripe_fingerprint: @stripe_fingerprint)
