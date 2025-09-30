@@ -111,10 +111,24 @@ module User::Risk
   end
 
   def enable_sellers_other_accounts
-    return if payment_address.blank?
+    if payment_address.present?
+      User.where(payment_address:).where.not(id:).each do |user|
+        user.mark_compliant!(author_name: "enable_sellers_other_accounts", content: "Marked compliant automatically on #{Time.current.to_fs(:formatted_date_full_month)} as payment address #{payment_address} is now unblocked")
+      end
+    end
 
-    User.where(payment_address:).where.not(id:).each do |user|
-      user.mark_compliant!(author_name: "enable_sellers_other_accounts", content: "Marked compliant automatically on #{Time.current.to_fs(:formatted_date_full_month)} as payment address #{payment_address} is now unblocked")
+    if self.active_bank_account&.stripe_fingerprint.present?
+      matching_bank_accounts = BankAccount.alive
+                                         .where(stripe_fingerprint: self.active_bank_account.stripe_fingerprint)
+                                         .where.not(user_id: id)
+                                         .includes(:user)
+
+      matching_bank_accounts.find_each do |bank_account|
+        user = bank_account.user
+        next if user.blank? || user.compliant?
+
+        user.mark_compliant!(author_name: "enable_sellers_other_accounts", content: "Marked compliant automatically on #{Time.current.to_fs(:formatted_date_full_month)} as ACH bank account with Stripe fingerprint #{self.active_bank_account.stripe_fingerprint} is now unblocked")
+      end
     end
   end
 
