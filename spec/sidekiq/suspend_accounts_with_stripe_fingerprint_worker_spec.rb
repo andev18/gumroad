@@ -6,7 +6,7 @@ describe SuspendAccountsWithStripeFingerprintWorker do
       @stripe_fingerprint = "fp_test_fingerprint_123"
       @user = create(:user)
       @user_2 = create(:user)
-      create(:user) # admin user
+      create(:user)
 
       create(:ach_account, user: @user, stripe_fingerprint: @stripe_fingerprint)
       create(:ach_account, user: @user_2, stripe_fingerprint: @stripe_fingerprint)

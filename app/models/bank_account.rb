@@ -22,7 +22,7 @@ class BankAccount < ApplicationRecord
   after_create_commit :handle_stripe_bank_account
   after_create_commit :handle_compliance_info_request
   after_create :update_user_products_search_index
-  after_update :flag_fraud_if_suspended_stripe_fingerprint, if: :saved_change_to_stripe_fingerprint?
+  after_commit :flag_fraud_if_suspended_stripe_fingerprint, on: [:create, :update], if: :saved_change_to_stripe_fingerprint?
 
   # This state machine can be expanded once we implement a complex verification process.
   state_machine(:state, initial: :unverified) do

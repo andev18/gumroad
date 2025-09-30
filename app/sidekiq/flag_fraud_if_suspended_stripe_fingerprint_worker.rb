@@ -8,13 +8,11 @@ class FlagFraudIfSuspendedStripeFingerprintWorker
     user = User.find_by(id: user_id)
     return if !user.can_flag_for_fraud?
 
-    active_bank_account = user.active_bank_account
-    return if active_bank_account.blank? || active_bank_account.stripe_fingerprint.blank?
-
-    stripe_fingerprint = active_bank_account.stripe_fingerprint
+    bank_account = user.active_bank_account
+    return if bank_account.blank? || bank_account.stripe_fingerprint.blank?
 
     banned_accounts_with_same_fingerprint = User.joins(:bank_accounts)
-                                                .where(bank_accounts: { stripe_fingerprint: stripe_fingerprint })
+                                                .where(bank_accounts: { stripe_fingerprint: bank_account.stripe_fingerprint })
                                                 .where(user_risk_state: ["suspended_for_tos_violation", "suspended_for_fraud"])
                                                 .where.not(id: user.id)
 
