@@ -3,7 +3,7 @@
 describe SuspendAccountsWithStripeFingerprintWorker do
   describe "#perform" do
     before do
-      @stripe_fingerprint = "fp_test_fingerprint_123"
+      @stripe_fingerprint = "test_stripe_fingerprint"
       @user = create(:user)
       @user_2 = create(:user)
       create(:user)
