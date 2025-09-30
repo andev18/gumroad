@@ -8,8 +8,8 @@ describe CheckStripeFingerprintWorker do
       @suspended_user = create(:user, user_risk_state: :suspended_for_fraud)
       create(:user) # admin user
 
-      create(:bank_account, user: @user, stripe_fingerprint: @stripe_fingerprint)
-      create(:bank_account, user: @suspended_user, stripe_fingerprint: @stripe_fingerprint)
+      create(:ach_account, user: @user, stripe_fingerprint: @stripe_fingerprint)
+      create(:ach_account, user: @suspended_user, stripe_fingerprint: @stripe_fingerprint)
     end
 
     it "flags user if they have the same stripe fingerprint as a suspended account" do
@@ -18,7 +18,7 @@ describe CheckStripeFingerprintWorker do
       described_class.new.perform(@user.id)
 
       expect(@user.reload.flagged_for_fraud?).to be(true)
-      expect(@user.comments.last.content).to include("Flagged for fraud automatically")
+      expect(@user.comments.last.content).to include("Flagged for fraud by CheckStripeFingerprint")
       expect(@user.comments.last.author_name).to eq("CheckStripeFingerprint")
     end
 
@@ -40,7 +40,7 @@ describe CheckStripeFingerprintWorker do
 
     it "handles users with bank accounts without stripe fingerprints gracefully" do
       user_with_blank_fingerprint = create(:user)
-      create(:bank_account, user: user_with_blank_fingerprint, stripe_fingerprint: nil)
+      create(:ach_account, user: user_with_blank_fingerprint, stripe_fingerprint: nil)
 
       expect do
         described_class.new.perform(user_with_blank_fingerprint.id)
