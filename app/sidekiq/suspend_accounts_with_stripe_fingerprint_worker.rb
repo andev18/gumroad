@@ -7,7 +7,7 @@ class SuspendAccountsWithStripeFingerprintWorker
   def perform(user_id)
     suspended_user = User.find(user_id)
 
-    return if suspended_user.active_bank_account.blank? || suspended_user.active_bank_account.stripe_fingerprint.blank?
+    return if suspended_user.active_bank_account&.stripe_fingerprint.blank?
 
     stripe_fingerprint = suspended_user.active_bank_account.stripe_fingerprint
 
