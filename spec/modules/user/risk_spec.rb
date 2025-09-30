@@ -29,4 +29,35 @@ describe User::Risk do
       end
     end
   end
+
+  describe "#suspend_sellers_other_accounts" do
+    let(:user) { create(:user) }
+
+    it "enqueues both PayPal and Stripe fingerprint account suspension workers" do
+      expect(SuspendAccountsWithPaymentAddressWorker).to receive(:perform_in).with(5.seconds, user.id)
+      expect(SuspendAccountsWithStripeFingerprintWorker).to receive(:perform_in).with(5.seconds, user.id)
+
+      user.suspend_sellers_other_accounts
+    end
+  end
+
+  describe "#enable_sellers_other_accounts" do
+    before do
+      @stripe_fingerprint = "test_stripe_fingerprint"
+      @user = create(:user)
+      @user_2 = create(:user, user_risk_state: :suspended_for_fraud)
+      create(:user)
+
+      create(:ach_account, user: @user, stripe_fingerprint: @stripe_fingerprint)
+      create(:ach_account, user: @user_2, stripe_fingerprint: @stripe_fingerprint)
+    end
+
+    it "marks other accounts with the same Stripe fingerprint as compliant" do
+      @user.enable_sellers_other_accounts
+
+      expect(@user_2.reload.compliant?).to be(true)
+      expect(@user_2.comments.last.content).to eq("Marked compliant automatically on #{Time.current.to_fs(:formatted_date_full_month)} as ACH bank account with Stripe fingerprint #{@stripe_fingerprint} is now unblocked")
+      expect(@user_2.comments.last.author_name).to eq("enable_sellers_other_accounts")
+    end
+  end
 end
