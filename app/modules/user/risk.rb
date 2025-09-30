@@ -118,15 +118,11 @@ module User::Risk
     end
 
     if self.active_bank_account&.stripe_fingerprint.present?
-      matching_bank_accounts = BankAccount.alive
-                                         .where(stripe_fingerprint: self.active_bank_account.stripe_fingerprint)
-                                         .where.not(user_id: id)
-                                         .includes(:user)
+      users_with_same_stripe_fingerprint = User.joins(:bank_accounts)
+                                               .where(bank_accounts: { stripe_fingerprint: self.active_bank_account.stripe_fingerprint })
+                                               .where.not(id:)
 
-      matching_bank_accounts.find_each do |bank_account|
-        user = bank_account.user
-        next if user.blank? || user.compliant?
-
+      users_with_same_stripe_fingerprint.find_each do |user|
         user.mark_compliant!(author_name: "enable_sellers_other_accounts", content: "Marked compliant automatically on #{Time.current.to_fs(:formatted_date_full_month)} as ACH bank account with Stripe fingerprint #{self.active_bank_account.stripe_fingerprint} is now unblocked")
       end
     end
