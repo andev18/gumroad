@@ -8,8 +8,8 @@ describe SuspendAccountsWithStripeFingerprintWorker do
       @user_2 = create(:user)
       create(:user) # admin user
 
-      create(:bank_account, user: @user, stripe_fingerprint: @stripe_fingerprint)
-      create(:bank_account, user: @user_2, stripe_fingerprint: @stripe_fingerprint)
+      create(:ach_account, user: @user, stripe_fingerprint: @stripe_fingerprint)
+      create(:ach_account, user: @user_2, stripe_fingerprint: @stripe_fingerprint)
     end
 
     it "suspends other accounts with the same stripe fingerprint" do
