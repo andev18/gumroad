@@ -33,7 +33,7 @@ describe User::Risk do
   describe "#suspend_sellers_other_accounts" do
     let(:user) { create(:user) }
 
-    it "enqueues both PayPal and Stripe fingerprint suspension workers" do
+    it "enqueues both PayPal and Stripe fingerprint account suspension workers" do
       expect(SuspendAccountsWithPaymentAddressWorker).to receive(:perform_in).with(5.seconds, user.id)
       expect(SuspendAccountsWithStripeFingerprintWorker).to receive(:perform_in).with(5.seconds, user.id)
 

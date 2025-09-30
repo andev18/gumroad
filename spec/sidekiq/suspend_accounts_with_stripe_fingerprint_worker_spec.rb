@@ -12,7 +12,7 @@ describe SuspendAccountsWithStripeFingerprintWorker do
       create(:ach_account, user: @user_2, stripe_fingerprint: @stripe_fingerprint)
     end
 
-    it "suspends other accounts with the same stripe fingerprint" do
+    it "suspends other accounts with the same Stripe fingerprint" do
       described_class.new.perform(@user.id)
 
       expect(@user_2.reload.suspended?).to be(true)
