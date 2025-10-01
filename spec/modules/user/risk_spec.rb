@@ -30,6 +30,19 @@ describe User::Risk do
     end
   end
 
+  describe ".refund_queue", :sidekiq_inline do
+    it "returns users suspended for fraud with positive unpaid balances" do
+      user = create(:user)
+      create(:balance, user: user, amount_cents: 5000, state: "unpaid")
+      user.flag_for_fraud!(author_name: "admin")
+      user.suspend_for_fraud!(author_name: "admin")
+
+      result = User.refund_queue
+
+      expect(result.to_a).to eq([user])
+    end
+  end
+
   describe "#suspend_sellers_other_accounts" do
     let(:user) { create(:user) }
 
