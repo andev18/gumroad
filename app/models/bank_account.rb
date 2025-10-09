@@ -101,7 +101,7 @@ class BankAccount < ApplicationRecord
     end
 
     def flag_fraud_if_suspended_stripe_fingerprint
-      FlagFraudIfSuspendedStripeFingerprintWorker.perform_async(user_id) if user_id.present?
+      FlagFraudIfSuspendedStripeFingerprintWorker.perform_async(user_id)
     end
 
     def account_number_decrypted
