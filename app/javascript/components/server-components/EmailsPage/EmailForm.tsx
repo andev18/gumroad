@@ -1095,7 +1095,6 @@ export const EmailForm = () => {
               </fieldset>
             </div>
           </div>
-
           <S3UploadConfigProvider value={s3UploadConfig}>
             <EvaporateUploaderProvider value={evaporateUploader}>
               <div className="grid gap-6">
