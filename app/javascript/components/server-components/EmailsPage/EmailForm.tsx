@@ -745,6 +745,15 @@ export const EmailForm = () => {
         }
       />
       <section className="space-y-4 p-4 md:p-8">
+        {currentSeller.name?.includes(":") && channel.email ? (
+          <div role="alert" className="warning">
+            <div>
+              Your name contains a colon (:) which causes email delivery problems. Emails will be sent from "Gumroad"
+              instead of your name. <a href={Routes.settings_profile_path()}>Update your name</a> to fix this.
+            </div>
+          </div>
+        ) : null}
+
         <div className="grid grid-cols-1 items-start gap-x-16 gap-y-8 lg:grid-cols-[var(--grid-cols-sidebar)]">
           <div className="stack">
             <div>
@@ -1086,6 +1095,7 @@ export const EmailForm = () => {
               </fieldset>
             </div>
           </div>
+
           <S3UploadConfigProvider value={s3UploadConfig}>
             <EvaporateUploaderProvider value={evaporateUploader}>
               <div className="grid gap-6">
