@@ -20,9 +20,9 @@ module MailerHelper
 
   def from_email_address_name(name)
     # SendGrid bounces emails where the creator's name contains
-    # at least one letter with accents and at least one symbol.
-    # In order to go around this issue, we fallback to using "Gumroad" as the sender name when this scenario occurs.
-    if name.present? && !name.match?(EXTENDED_LATIN_AND_SYMBOL_REGEX)
+    # at least one letter with accents and at least one symbol, or colon characters.
+    # In order to go around these issues, we fallback to using "Gumroad" as the sender name when these scenarios occur.
+    if name.present? && !name.match?(EXTENDED_LATIN_AND_SYMBOL_REGEX) && !name.include?(":")
       name.delete("\n").strip
     else
       "Gumroad"
