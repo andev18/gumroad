@@ -951,6 +951,14 @@ describe User, :vcr do
         @user.name = sample_string_of_length(256)
         expect(@user).to be_invalid
       end
+
+      it "is invalid if it contains colon character" do
+        @user.name = "John: The Creator"
+        expect(@user).to be_invalid
+        expect(@user.errors.messages).to eq(
+          name: ["cannot contain ':' as it causes issues with our email system. Please remove any colons from your name and try again."],
+        )
+      end
     end
 
     describe "username" do
