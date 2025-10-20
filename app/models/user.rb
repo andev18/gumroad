@@ -167,7 +167,7 @@ class User < ApplicationRecord
                        if: :username_changed? # validate only when seller changes their username
 
   validates :name, length: { maximum: MAX_LENGTH_NAME, too_long: "Your name is too long. Please try again with a shorter one." },
-                   format: { without: /:/, message: "cannot contain ':' as it causes issues with our email system. Please remove any colons from your name and try again." }
+                   format: { without: /:/, message: "cannot contain ':' as it causes email delivery problems. Please remove any colons from your name and try again." }
   validates :facebook_meta_tag, length: { maximum: MAX_LENGTH_FACEBOOK_META_TAG }
   validates :purchasing_power_parity_limit, allow_nil: true, numericality: { greater_than_or_equal_to: 1, less_than_or_equal_to: 100 }
 
