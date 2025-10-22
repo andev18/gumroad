@@ -1639,7 +1639,7 @@ describe("Workflows", js: true, type: :system) do
       end
     end
 
-    context "when seller name is invalid for email delivery" do
+    context "when seller name is valid for email delivery" do
       it "does not display warning" do
         seller.update!(name: "John The Creator")
 
