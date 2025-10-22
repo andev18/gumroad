@@ -745,7 +745,7 @@ export const EmailForm = () => {
         }
       />
       <section className="space-y-4 p-4 md:p-8">
-        {currentSeller.name?.includes(":") && channel.email ? (
+        {currentSeller.isEmailInvalidForDelivery && channel.email ? (
           <div role="alert" className="warning">
             <div>
               Your name contains a colon (:) which causes email delivery problems. Emails will be sent from "Gumroad"
