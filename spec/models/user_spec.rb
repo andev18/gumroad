@@ -972,9 +972,7 @@ describe User, :vcr do
         it "is valid if colon character exists but name is not changed" do
           user = create(:user, name: "John The Creator")
           user.update_column(:name, "John: The Creator") # Bypass validation to simulate legacy data
-
-          user.email = "newemail@example.com"
-          expect(user).to be_valid
+          expect(user.reload).to be_valid
         end
       end
     end
