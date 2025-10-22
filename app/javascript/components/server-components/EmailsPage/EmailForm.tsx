@@ -42,6 +42,7 @@ import { S3UploadConfigProvider } from "$app/components/S3UploadConfig";
 import { Separator } from "$app/components/Separator";
 import { showAlert } from "$app/components/server-components/Alert";
 import { editEmailPath, emailTabPath, newEmailPath } from "$app/components/server-components/EmailsPage";
+import { InvalidNameForEmailDeliveryWarning } from "$app/components/server-components/InvalidNameForEmailDeliveryWarning";
 import { TagInput } from "$app/components/TagInput";
 import { UpsellCard } from "$app/components/TiptapExtensions/UpsellCard";
 import { PageHeader } from "$app/components/ui/PageHeader";
@@ -745,14 +746,7 @@ export const EmailForm = () => {
         }
       />
       <section className="space-y-4 p-4 md:p-8">
-        {currentSeller.isNameInvalidForEmailDelivery && channel.email ? (
-          <div role="alert" className="warning">
-            <div>
-              Your name contains a colon (:) which causes email delivery problems and will be removed from the sender
-              name when emails are sent. <a href={Routes.settings_profile_path()}>Update your name</a> to fix this.
-            </div>
-          </div>
-        ) : null}
+        {currentSeller.isNameInvalidForEmailDelivery && channel.email ? <InvalidNameForEmailDeliveryWarning /> : null}
 
         <div className="grid grid-cols-1 items-start gap-x-16 gap-y-8 lg:grid-cols-[var(--grid-cols-sidebar)]">
           <div className="stack">
