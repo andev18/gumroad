@@ -14,7 +14,7 @@ export type CurrentSeller = {
   isBuyer: boolean;
   timeZone: TimeZone;
   has_published_products: boolean;
-  isEmailInvalidForDelivery: boolean;
+  isNameInvalidForEmailDelivery: boolean;
 };
 
 const Context = React.createContext<CurrentSeller | null | undefined>(undefined);
@@ -29,7 +29,7 @@ export const parseCurrentSeller = (data: unknown): CurrentSeller | null => {
     is_buyer: boolean;
     time_zone: TimeZone;
     has_published_products: boolean;
-    is_email_invalid_for_delivery: boolean;
+    is_name_invalid_for_email_delivery: boolean;
   } | null>(data);
   if (parsed == null) return null;
   return {
@@ -41,7 +41,7 @@ export const parseCurrentSeller = (data: unknown): CurrentSeller | null => {
     isBuyer: parsed.is_buyer,
     timeZone: parsed.time_zone,
     has_published_products: parsed.has_published_products,
-    isEmailInvalidForDelivery: parsed.is_email_invalid_for_delivery,
+    isNameInvalidForEmailDelivery: parsed.is_name_invalid_for_email_delivery,
   };
 };
 
