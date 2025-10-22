@@ -11,8 +11,8 @@ describe MailerHelper do
     end
 
     context "when name contains colon character" do
-      it "returns 'Gumroad' as the fallback name" do
-        expect(from_email_address_name("John: The Creator")).to eq("Gumroad")
+      it "strips the colon and returns the cleaned name" do
+        expect(from_email_address_name("John: The Creator")).to eq("John The Creator")
       end
     end
   end

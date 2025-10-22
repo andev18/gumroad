@@ -952,12 +952,30 @@ describe User, :vcr do
         expect(@user).to be_invalid
       end
 
-      it "is invalid if it contains colon character" do
-        @user.name = "John: The Creator"
-        expect(@user).to be_invalid
-        expect(@user.errors.messages).to eq(
-          name: ["cannot contain ':' as it causes email delivery problems. Please remove any colons from your name and try again."],
-        )
+      describe "format" do
+        it "is invalid if it contains colon character on create" do
+          user = build(:user, name: "John: The Creator")
+          expect(user).to be_invalid
+          expect(user.errors.messages).to eq(
+            name: ["cannot contain ':' as it causes email delivery problems. Please remove any colons from your name and try again."],
+          )
+        end
+
+        it "is invalid if it contains colon character when name is updated" do
+          @user.name = "John: The Creator"
+          expect(@user).to be_invalid
+          expect(@user.errors.messages).to eq(
+            name: ["cannot contain ':' as it causes email delivery problems. Please remove any colons from your name and try again."],
+          )
+        end
+
+        it "is valid if colon character exists but name is not changed" do
+          user = create(:user, name: "John The Creator")
+          user.update_column(:name, "John: The Creator") # Bypass validation to simulate legacy data
+
+          user.email = "newemail@example.com"
+          expect(user).to be_valid
+        end
       end
     end
 
