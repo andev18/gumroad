@@ -748,8 +748,8 @@ export const EmailForm = () => {
         {currentSeller.isEmailInvalidForDelivery && channel.email ? (
           <div role="alert" className="warning">
             <div>
-              Your name contains a colon (:) which causes email delivery problems. Emails will be sent from "Gumroad"
-              instead of your name. <a href={Routes.settings_profile_path()}>Update your name</a> to fix this.
+              Your name contains a colon (:) which causes email delivery problems, which will be removed from the sender
+              name when emails are sent. <a href={Routes.settings_profile_path()}>Update your name</a> to fix this.
             </div>
           </div>
         ) : null}

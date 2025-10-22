@@ -957,7 +957,7 @@ describe User, :vcr do
           user = build(:user, name: "John: The Creator")
           expect(user).to be_invalid
           expect(user.errors.messages).to eq(
-            name: ["cannot contain ':' as it causes email delivery problems. Please remove any colons from your name and try again."],
+            name: ["cannot contain colons (:) as it causes email delivery problems. Please remove any colons from your name and try again."],
           )
         end
 
@@ -965,7 +965,7 @@ describe User, :vcr do
           @user.name = "John: The Creator"
           expect(@user).to be_invalid
           expect(@user.errors.messages).to eq(
-            name: ["cannot contain ':' as it causes email delivery problems. Please remove any colons from your name and try again."],
+            name: ["cannot contain colons (:) as it causes email delivery problems. Please remove any colons from your name and try again."],
           )
         end
 

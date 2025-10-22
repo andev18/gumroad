@@ -22,11 +22,10 @@ module MailerHelper
     # SendGrid bounces emails where the creator's name contains
     # at least one letter with accents and at least one symbol.
     # In order to go around this issue, we fallback to using "Gumroad" as the sender name when this scenario occurs.
-
     if name.present? && !name.match?(EXTENDED_LATIN_AND_SYMBOL_REGEX)
-      # Some mails are sent in batches via Resend, and Resend doesn't accept colons in from fields
-      # So we remove those characters from the sender name
-      name.delete("\n").gsub(User::INVALID_ACCOUNT_NAME_REGEX, "").strip
+      # Some mails are sent in batches via Resend, and Resend doesn't accept special characters like colons in from fields
+      # So we remove those characters from the sender name if any
+      name.delete("\n").gsub(User::INVALID_NAME_FOR_EMAIL_DELIVERY_REGEX, "").strip
     else
       "Gumroad"
     end
