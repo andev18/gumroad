@@ -45,7 +45,7 @@ class Admin::PurchasesController < Admin::BaseController
         @purchase.email = params[:resend_receipt][:email_address]
         @purchase.save!
 
-        if @purchase.subscription.present? && @purchase.subscription.original_purchase != @purchase
+        if @purchase.subscription.present? && !@purchase.is_original_subscription_purchase?
           @purchase.subscription.original_purchase.update!(email: params[:resend_receipt][:email_address])
         end
 
