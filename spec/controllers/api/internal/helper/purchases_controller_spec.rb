@@ -57,7 +57,7 @@ describe Api::Internal::Helper::PurchasesController, :vcr do
 
       it "updates original_purchase email for subscription purchases" do
         subscription = create(:subscription, user: buyer)
-        original_purchase = create(:purchase, email: from_email, purchaser: buyer, is_original_subscription_purchase: true, subscription: subscription)
+        original_purchase = create(:purchase, email: "old_original_purchase@example.com", purchaser: buyer, is_original_subscription_purchase: true, subscription: subscription)
         recurring_purchase = create(:purchase, email: from_email, purchaser: buyer, subscription: subscription)
 
         post :reassign_purchases, params: { from: from_email, to: to_email }
