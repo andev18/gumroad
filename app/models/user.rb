@@ -606,9 +606,7 @@ class User < ApplicationRecord
   end
 
   def is_name_invalid_for_email_delivery?
-    return false unless name.present?
-
-    name.match?(INVALID_NAME_FOR_EMAIL_DELIVERY_REGEX)
+    name.present? && name.match?(INVALID_NAME_FOR_EMAIL_DELIVERY_REGEX)
   end
 
   def deactivate!
