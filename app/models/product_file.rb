@@ -86,6 +86,8 @@ class ProductFile < ApplicationRecord
   end
 
   def as_json(options = {})
+    return super(options) if options.delete(:original)
+
     url_for_thumbnail = thumbnail_url
     {
       # TODO (product_edit_react) remove duplicate attribute
@@ -116,6 +118,7 @@ class ProductFile < ApplicationRecord
         }
       end,
       url:,
+      isbn:,
       thumbnail: url_for_thumbnail.present? ? { url: url_for_thumbnail, signed_id: thumbnail.signed_id, status: { type: "saved" } } : nil,
       status: { type: "saved" },
     }

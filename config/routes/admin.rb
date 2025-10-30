@@ -37,6 +37,12 @@ namespace :admin do
       resource :payout_info, only: :show
       resources :latest_posts, only: :index
       resources :stats, only: :index
+      resources :products, only: [] do
+        scope module: :products do
+          resources :tos_violation_flags, only: [:index, :create]
+          resources :purchases, only: :index
+        end
+      end
     end
     resources :service_charges, only: :index
     member do
@@ -67,9 +73,16 @@ namespace :admin do
 
   get "/users/:user_id/guids", to: "compliance/guids#index", as: :compliance_guids
 
+  resources :affiliates, only: [] do
+    resources :products, only: [], module: :affiliates do
+      resources :purchases, only: :index, module: :products
+    end
+  end
+
   resource :block_email_domains, only: [:show, :update]
   resource :unblock_email_domains, only: [:show, :update]
   resource :suspend_users, only: [:show, :update]
+  resource :refund_queue, only: [:show]
 
   resources :affiliates, only: [:index, :show], defaults: { format: "html" }
 
@@ -89,12 +102,19 @@ namespace :admin do
   resources :products, controller: "links", only: [:show, :destroy] do
     member do
       get "/file/:product_file_id/access", to: "links#access_product_file", as: :admin_access_product_file
-      get :purchases
+      get :legacy_purchases
       get :views_count
       get :sales_stats
       post :restore
     end
-    resource :staff_picked, only: [:create], controller: "products/staff_picked"
+    scope module: :products do
+      concerns :commentable
+
+      resource :details, controller: "details", only: [:show]
+      resource :info, only: [:show]
+      resource :staff_picked, controller: "staff_picked", only: [:create]
+      resources :purchases, only: [:index]
+    end
   end
 
   resources :payouts, only: [:index]
@@ -130,7 +150,9 @@ namespace :admin do
   post "/paydays/pay_user/:id", to: "paydays#pay_user", as: :pay_user
 
   # Search
-  get "/search_users", to: "search#users", as: :search_users
+  namespace :search do
+    resources :users, only: :index
+  end
   get "/search_purchases", to: "search#purchases", as: :search_purchases
 
   # Compliance
@@ -150,6 +172,5 @@ namespace :admin do
 
   scope module: "users" do
     post :block_ip_address
-    get :refund_queue
   end
 end
