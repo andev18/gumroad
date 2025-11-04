@@ -32,8 +32,10 @@ describe AffiliateMailer do
         it "clarifies when they will receive their affiliate credits" do
           product = create(:membership_product, :with_free_trial_enabled, user: seller)
           purchase = create(:free_trial_membership_purchase, affiliate:, link: product, seller:)
-          MoneyFormatter.format(purchase.affiliate_credit_cents, :usd, no_cents_if_whole: true, symbol: true)
+          formatted_amount = MoneyFormatter.format(purchase.affiliate_credit_cents, :usd, no_cents_if_whole: true, symbol: true)
           mail = AffiliateMailer.notify_affiliate_of_sale(purchase.id)
+          expect(mail.body.encoded).to include "Your commission rate: #{affiliate.affiliate_percentage}%"
+          expect(mail.body.encoded).to include "Your earnings (after fees): #{formatted_amount}"
           expect(mail.body.encoded).to include "If the subscriber continues with their subscription after their free trial has expired on #{purchase.subscription.free_trial_end_date_formatted}, we'll add your commission to your balance"
         end
       end
@@ -56,9 +58,9 @@ describe AffiliateMailer do
         expect(mail.subject).to include(email_subject)
         expect(mail.body.encoded).to include(email_body)
         expect(mail.body.encoded).to include("We've added your commission to your balance.")
-        expect(mail.body.encoded).to include "💰 Purchase amount: $10"
-        expect(mail.body.encoded).to include "💼 Your commission rate: 25%"
-        expect(mail.body.encoded).to include "🧾 Your earnings (after fees): $1.97"
+        expect(mail.body.encoded).to include "Purchase amount: $10"
+        expect(mail.body.encoded).to include "Your commission rate: 25%"
+        expect(mail.body.encoded).to include "Your earnings (after fees): $1.97"
       end
     end
 
