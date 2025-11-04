@@ -56,6 +56,9 @@ describe AffiliateMailer do
         expect(mail.subject).to include(email_subject)
         expect(mail.body.encoded).to include(email_body)
         expect(mail.body.encoded).to include("We've added your commission to your balance.")
+        expect(mail.body.encoded).to include "💰 Purchase amount: $10"
+        expect(mail.body.encoded).to include "💼 Your commission rate: 25%"
+        expect(mail.body.encoded).to include "🧾 Your earnings (after fees): $1.97"
       end
     end
 
