@@ -194,7 +194,7 @@ class AffiliateMailer < ApplicationMailer
       @seller_name = @purchase.seller.name_or_username
       @product_name = @purchase.link.name
 
-      @subject = "You helped make a sale through the global affiliate program."
+      @subject = "🎉 You earned a commission!"
       mail to: @affiliate.affiliate_user.form_email,
            subject: @subject,
            template_name: "notify_global_affiliate_of_sale"

@@ -8,7 +8,7 @@ describe AffiliateMailer do
     let(:product_name) { "Affiliated Product" }
     let(:purchaser_email) { generate(:email) }
 
-    shared_examples "notifies affiliate of a sale" do
+    shared_examples "notifies affiliate of a sale" do |closing_message = "Thanks for being a part of the team."|
       it "sends email to affiliate" do
         product = create(:product, user: seller, name: product_name)
         purchase = create(:purchase, affiliate:, link: product, seller:, email: purchaser_email)
@@ -16,7 +16,7 @@ describe AffiliateMailer do
         expect(mail.to).to eq([affiliate.affiliate_user.form_email])
         expect(mail.subject).to include(email_subject)
         expect(mail.body.encoded).to include(email_body)
-        expect(mail.body.encoded).to include("Thanks for being a part of the team.")
+        expect(mail.body.encoded).to include(closing_message)
       end
 
       context "for a subscription purchase" do
@@ -61,10 +61,10 @@ describe AffiliateMailer do
 
     context "for a global affiliate" do
       let(:affiliate) { create(:user).global_affiliate }
-      let(:email_subject) { "You helped make a sale through the global affiliate program." }
-      let(:email_body) { "#{seller.name_or_username} just made a sale of #{product_name} thanks to you!" }
+      let(:email_subject) { "🎉 You earned a commission!" }
+      let(:email_body) { "Great news — #{seller.name_or_username} just sold a copy of #{product_name} thanks to your referral." }
 
-      it_behaves_like "notifies affiliate of a sale"
+      it_behaves_like "notifies affiliate of a sale", "Thanks for being part of the team and helping make another sale happen!"
     end
 
     context "for a collaborator" do
