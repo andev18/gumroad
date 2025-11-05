@@ -506,8 +506,9 @@ class Api::Internal::Helper::PurchasesController < Api::Internal::Helper::BaseCo
     purchases.each do |purchase|
       purchase.email = to_email
 
-      if purchase.subscription.present? && !purchases.include?(purchase.original_purchase)
-        count += 1 if purchase.original_purchase.update(email: to_email)
+      if purchase.subscription.present? && !purchases.include?(purchase.original_purchase) && !purchase.is_original_subscription_purchase?
+        purchase.original_purchase.update(email: to_email)
+        count += 1 if purchase.original_purchase.saved_changes?
       end
 
       if target_user && purchase.purchaser_id.present?
