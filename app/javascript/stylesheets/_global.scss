@@ -88,11 +88,6 @@
   display: none !important;
 }
 
-[draggable="true"],
-[aria-grabbed] {
-  cursor: move;
-}
-
 // Unset max-width for Rack::MiniProfiler results to (expectedly) expand beyond
 // the narrow parent container.
 .profiler-results * {
