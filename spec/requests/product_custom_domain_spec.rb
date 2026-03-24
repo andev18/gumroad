@@ -21,6 +21,15 @@ describe "ProductCustomDomainScenario", type: :system, js: true do
     expect(product.sales.successful.count).to eq(1)
   end
 
+  context "when the URL includes product permalink" do
+    it "successfully purchases the linked product" do
+      visit "http://#{custom_domain.domain}:#{port}/l/#{product.unique_permalink}"
+      click_on "I want this!"
+      check_out(product)
+      expect(product.sales.successful.count).to eq(1)
+    end
+  end
+
   context "when buyer is logged in" do
     let(:buyer) { create(:user) }
     before do

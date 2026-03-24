@@ -1038,6 +1038,7 @@ Rails.application.routes.draw do
     get "/.well-known/acme-challenge/:token", to: "acme_challenges#show"
     product_tracking_routes(named_routes: false)
     get "/", to: "links#show", defaults: { format: "html" }
+    get "/l/:id", to: "links#show", defaults: { format: "html" }
     get "/l/:id/:code", to: "links#show", defaults: { format: "html" }
     get "/:code", to: "links#show", defaults: { format: "html" }
   end
