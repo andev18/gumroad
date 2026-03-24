@@ -38,7 +38,7 @@ describe "ProductCustomDomainScenario", type: :system, js: true do
 
   context "when there is a discount code" do
     let(:product) { create(:product, price_cents: 600) }
-    let(:offer_code) { create(:percentage_offer_code, products: [product], code: "launch", amount_percentage: 50) }
+    let(:offer_code) { create(:percentage_offer_code, products: [product], code: "LAUNCH", amount_percentage: 50) }
 
     it "applies the discount code when the URL contains only the discount code" do
       visit "http://#{custom_domain.domain}:#{port}/#{offer_code.code}"
