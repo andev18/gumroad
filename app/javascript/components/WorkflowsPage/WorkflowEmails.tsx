@@ -587,7 +587,13 @@ const EmailPreview = ({
   const emailFiles = useFiles((files) => files.filter(({ email_id }) => email_id === email.id));
 
   React.useEffect(() => {
-    if (isEditing) setTimeout(() => selfRef.current?.scrollIntoView({ behavior: "smooth" }), 500);
+    if (!isEditing) return;
+
+    const timeoutId = setTimeout(() => {
+      selfRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   });
 
   return (
