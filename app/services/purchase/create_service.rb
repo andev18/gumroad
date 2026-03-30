@@ -15,6 +15,7 @@ class Purchase::CreateService < Purchase::BaseService
     @purchase_params = params[:purchase]
     @gift_params = params[:gift].presence
     @buyer = buyer
+    @force_new_subscription = !!params[:force_new_subscription]
   end
 
   def perform
@@ -179,7 +180,7 @@ class Purchase::CreateService < Purchase::BaseService
     end
 
     def should_check_for_restartable_subscription?
-      product.is_recurring_billing && !is_gift?
+      product.is_recurring_billing && !is_gift? && !(buyer.present? && @force_new_subscription)
     end
 
     def handle_existing_subscription
@@ -195,7 +196,7 @@ class Purchase::CreateService < Purchase::BaseService
         error_message = if buyer.present?
           "You already have an active subscription to this membership. Visit your Library to manage it."
         else
-          Bugsnag.notify(StandardError.new("Existing subscription checkout attempt")) do |report|
+          ErrorNotifier.notify(StandardError.new("Existing subscription checkout attempt")) do |report|
             report.severity = "info"
             report.add_metadata(:subscription, {
                                   subscription_id: active_subscription.id,

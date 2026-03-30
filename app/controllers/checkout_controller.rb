@@ -62,7 +62,7 @@ class CheckoutController < ApplicationController
 
     redirect_to checkout_path, status: :see_other
   rescue ActiveRecord::RecordInvalid => e
-    Bugsnag.notify(e)
+    ErrorNotifier.notify(e)
     Rails.logger.error(e.full_message) if Rails.env.development?
     redirect_to checkout_path, alert: "Sorry, something went wrong. Please try again."
   end
@@ -126,7 +126,7 @@ class CheckoutController < ApplicationController
         discountCodes: [:code, :fromUrl],
         items: [
           :option_id, :affiliate_id, :price, :quantity, :recurrence, :recommended_by, :rent,
-          :referrer, :recommender_model_name, :call_start_time, :pay_in_installments,
+          :referrer, :recommender_model_name, :call_start_time, :pay_in_installments, :force_new_subscription,
           url_parameters: {}, product: [:id], accepted_offer: [:id, :original_product_id, :original_variant_id],
         ]
       )
